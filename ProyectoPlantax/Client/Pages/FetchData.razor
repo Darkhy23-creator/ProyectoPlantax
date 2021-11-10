@@ -1,0 +1,62 @@
+﻿@page "/fetchdata"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using ProyectoPlantax.Shared
+@inject IStringLocalizer<Resource> localizer
+@attribute [Authorize]
+@inject HttpClient Http
+
+<h1>@localizer["FDtittle"]</h1>
+
+<p>@localizer["FDsubtittle"]</p>
+
+
+@if (ChartData == null)
+{
+    <p><em>@localizer["Loading"]</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@localizer["Fecha"]</th>
+                <th>@localizer["Humedad"]</th>
+                <th>@localizer["Temperatura"]</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in ChartData)
+            {
+                <tr>
+                    <td>@forecast.fecha.ToString()</td>
+                    <td>@forecast.humedad</td>
+                    <td>@forecast.temperatura</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    public DatosSensor[] ChartData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ChartData = await Http.GetFromJsonAsync<DatosSensor[]>("api/DatosSensor");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+
+
+
+
+}

@@ -1,0 +1,153 @@
+﻿@page "/graficas"
+@inject NavigationManager NavigationManager
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using ProyectoPlantax.Shared
+@using ProyectoPlantax.Client.Pages
+@using Syncfusion.Blazor.Charts
+@using ProyectoPlantax.Server.Data
+@attribute [Authorize]
+@inject HttpClient Http
+@inject IStringLocalizer<Resource> localizer
+
+<div class="control-section">
+    <Syncfusion.Blazor.Charts.SfChart Title=@localizer["Graficas"]>
+        <Syncfusion.Blazor.Charts.ChartEvents Load="ChartLoad" />
+        <Syncfusion.Blazor.Charts.ChartArea><Syncfusion.Blazor.Charts.ChartBorder Width="0"></Syncfusion.Blazor.Charts.ChartBorder></Syncfusion.Blazor.Charts.ChartArea>
+        <Syncfusion.Blazor.Charts.ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime"
+                                                    IntervalType="Syncfusion.Blazor.Charts.IntervalType.Days" EdgeLabelPlacement="Syncfusion.Blazor.Charts.EdgeLabelPlacement.Shift">
+            <Syncfusion.Blazor.Charts.ChartAxisMajorGridLines Width="0"></Syncfusion.Blazor.Charts.ChartAxisMajorGridLines>
+        </Syncfusion.Blazor.Charts.ChartPrimaryXAxis>
+        <Syncfusion.Blazor.Charts.ChartPrimaryYAxis LabelFormat="{value}" RangePadding="Syncfusion.Blazor.Charts.ChartRangePadding.None" Minimum="0" Maximum="80" Interval="10">
+            <Syncfusion.Blazor.Charts.ChartAxisLineStyle Width="0"></Syncfusion.Blazor.Charts.ChartAxisLineStyle>
+            <Syncfusion.Blazor.Charts.ChartAxisMajorTickLines Width="0"></Syncfusion.Blazor.Charts.ChartAxisMajorTickLines>
+        </Syncfusion.Blazor.Charts.ChartPrimaryYAxis>
+        <Syncfusion.Blazor.Charts.ChartTooltipSettings Enable="true"></Syncfusion.Blazor.Charts.ChartTooltipSettings>
+        <Syncfusion.Blazor.Charts.ChartSeriesCollection>
+            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@ChartData" Name=@localizer["Humedad"] XName="fecha" Width="2"
+                                                  Opacity="1" YName="humedad" Type="Syncfusion.Blazor.Charts.ChartSeriesType.Column">
+                <Syncfusion.Blazor.Charts.ChartMarker Visible="true" Width="1" Height="1">
+                </Syncfusion.Blazor.Charts.ChartMarker>
+            </Syncfusion.Blazor.Charts.ChartSeries>
+            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@ChartData" Name=@localizer["Temperatura"] XName="fecha" Width="2"
+                                                  Opacity="1" YName="temperatura" Type="Syncfusion.Blazor.Charts.ChartSeriesType.Column">
+                <Syncfusion.Blazor.Charts.ChartMarker Visible="true" Width="1" Height="1">
+                </Syncfusion.Blazor.Charts.ChartMarker>
+            </Syncfusion.Blazor.Charts.ChartSeries>
+        </Syncfusion.Blazor.Charts.ChartSeriesCollection>
+    </Syncfusion.Blazor.Charts.SfChart>
+</div>
+
+<div class="control-section">
+    <Syncfusion.Blazor.Charts.SfChart Title=@localizer["Graficas"]>
+        <Syncfusion.Blazor.Charts.ChartEvents Load="ChartLoad" />
+        <Syncfusion.Blazor.Charts.ChartArea><Syncfusion.Blazor.Charts.ChartBorder Width="0"></Syncfusion.Blazor.Charts.ChartBorder></Syncfusion.Blazor.Charts.ChartArea>
+        <Syncfusion.Blazor.Charts.ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime"
+                                                    IntervalType="Syncfusion.Blazor.Charts.IntervalType.Months" EdgeLabelPlacement="Syncfusion.Blazor.Charts.EdgeLabelPlacement.Shift">
+            <Syncfusion.Blazor.Charts.ChartAxisMajorGridLines Width="0"></Syncfusion.Blazor.Charts.ChartAxisMajorGridLines>
+        </Syncfusion.Blazor.Charts.ChartPrimaryXAxis>
+        <Syncfusion.Blazor.Charts.ChartPrimaryYAxis LabelFormat="{value}" RangePadding="Syncfusion.Blazor.Charts.ChartRangePadding.None" Minimum="0" Maximum="80" Interval="5">
+            <Syncfusion.Blazor.Charts.ChartAxisLineStyle Width="0"></Syncfusion.Blazor.Charts.ChartAxisLineStyle>
+            <Syncfusion.Blazor.Charts.ChartAxisMajorTickLines Width="0"></Syncfusion.Blazor.Charts.ChartAxisMajorTickLines>
+        </Syncfusion.Blazor.Charts.ChartPrimaryYAxis>
+        <Syncfusion.Blazor.Charts.ChartTooltipSettings Enable="true"></Syncfusion.Blazor.Charts.ChartTooltipSettings>
+        <Syncfusion.Blazor.Charts.ChartSeriesCollection>
+            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@ChartData" Name=@localizer["Humedad"] XName="fecha" Width="2"
+                                                  Opacity="1" YName="humedad" Type="Syncfusion.Blazor.Charts.ChartSeriesType.Bubble">
+                <Syncfusion.Blazor.Charts.ChartMarker Visible="true" Width="1" Height="1">
+                </Syncfusion.Blazor.Charts.ChartMarker>
+            </Syncfusion.Blazor.Charts.ChartSeries>
+            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@ChartData" Name=@localizer["Temperatura"] XName="fecha" Width="2"
+                                                  Opacity="1" YName="temperatura" Type="Syncfusion.Blazor.Charts.ChartSeriesType.Bubble">
+                <Syncfusion.Blazor.Charts.ChartMarker Visible="true" Width="1" Height="1">
+                </Syncfusion.Blazor.Charts.ChartMarker>
+            </Syncfusion.Blazor.Charts.ChartSeries>
+        </Syncfusion.Blazor.Charts.ChartSeriesCollection>
+    </Syncfusion.Blazor.Charts.SfChart>
+</div>
+
+@code {
+    public DatosSensor[] ChartData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ChartData = await Http.GetFromJsonAsync<DatosSensor[]>("api/DatosSensor");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+    private string CurrentUri;
+
+    void ChartLoad(ILoadedEventArgs Args)
+    {
+        CurrentUri = NavigationManager.Uri;
+        if (CurrentUri.IndexOf("material") > -1)
+        {
+            Args.Theme = ChartTheme.Material;
+        }
+        else if (CurrentUri.IndexOf("fabric") > -1)
+        {
+            Args.Theme = ChartTheme.Fabric;
+        }
+        else if (CurrentUri.IndexOf("bootstrap") > -1)
+        {
+            Args.Theme = ChartTheme.Bootstrap;
+        }
+        else if (CurrentUri.IndexOf("highcontrast") > -1)
+        {
+            Args.Theme = ChartTheme.HighContrast;
+        }
+        else
+        {
+            Args.Theme = ChartTheme.Bootstrap4;
+        }
+    }
+
+}
+
+
+
+@code {/*
+
+private DatosSensor[] ChartData;
+
+protected override async Task OnInitializedAsync() =>
+ChartData = await Http.GetFromJsonAsync<DatosSensor[]>("api/DatosSensor");
+
+private string CurrentUri;
+
+DatosSensor i = new DatosSensor();
+
+void ChartLoad(ILoadedEventArgs Args)
+{
+CurrentUri = NavigationManager.Uri;
+if (CurrentUri.IndexOf("material") > -1)
+{
+    Args.Theme = ChartTheme.Material;
+}
+else if (CurrentUri.IndexOf("fabric") > -1)
+{
+    Args.Theme = ChartTheme.Fabric;
+}
+else if (CurrentUri.IndexOf("bootstrap") > -1)
+{
+    Args.Theme = ChartTheme.Bootstrap;
+}
+else if (CurrentUri.IndexOf("highcontrast") > -1)
+{
+    Args.Theme = ChartTheme.HighContrast;
+}
+else
+{
+    Args.Theme = ChartTheme.Bootstrap4;
+}
+}*/
+
+}
